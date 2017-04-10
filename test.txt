@@ -1,0 +1,9 @@
+~!<<<==<&&&===>=>>>&&&|||$^#@(  ){}[	]
+"This is a // string" 'a'
+12.5//52.3//2
+.35/*comment/*still comment // still 
+	comment*/ not comment;
+else(return 1else * else1)
+12. + 2.3.333 = 9-a */!= _a
+byte, const.end exit float64 for function if int32 print record  ref
+static type var while 
