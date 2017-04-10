@@ -58,68 +58,68 @@ class Token {
 	
 	void printOut()
 	{
-		cout << '[' << lineNumber << ',' << colNumber << ']' << ' ';
+		cerr << '[' << lineNumber << ',' << colNumber << ']' << ' ';
 		switch (kind) //print out the kind. List matches list of Kind enums above
 		{
-			case UNARY_NEG: cout << "UNARY_NEG"; break;
-			case UNARY_NOT: cout << "UNARY_NOT"; break;
-			case UNARY_TILDE: cout << "UNARY_TILDE"; break;
-			case MULT: cout << "MULT"; break;
-			case DIV: cout << "DIV"; break;
-			case PLUS: cout << "PLUS"; break;
-			case MINUS: cout << "MINUS"; break;
-			case LESS_THAN: cout << "LESS_THAN"; break;
-			case GREAT_THAN: cout << "GREAT_THAN"; break;
-			case LESS_THAN_EQUAL: cout << "LESS_THAN_EQUAL"; break;
-			case GREATER_THAN_EQUAL: cout << "GREATER_THAN_EQUAL"; break;
-			case EQUALITY: cout << "EQUALITY"; break;
-			case INEQUALITY: cout << "INEQUALITY"; break;
-			case BITWISE_AND: cout << "BITWISE_AND"; break;
-			case LOGICAL_AND: cout << "LOGICAL_AND"; break;
-			case BITWISE_OR: cout << "BITWISE_OR"; break;
-			case LOGICAL_OR: cout << "LOGICAL_OR"; break;
-			case ASSIGNMENT: cout << "ASSIGNMENT"; break;
-			case HAT: cout << "HAT"; break;
-			case BITWISE_SHIFT_RIGHT: cout << "BITWISE_SHIFT_RIGHT"; break;
-			case BITWISE_SHIFT_LEFT: cout << "BITWISE_SHIFT_LEFT"; break;
-			case LEFT_PAREN: cout << "LEFT_PAREN"; break;
-			case RIGHT_PAREN: cout << "RIGHT_PAREN"; break;
-			case LEFT_BRACKET: cout << "LEFT_BRACKET"; break;
-			case RIGHT_BRACKET: cout << "RIGHT_BRACKET"; break;
-			case LEFT_BRACE: cout << "LEFT_BRACE"; break;
-			case RIGHT_BRACE: cout << "RIGHT_BRACE"; break;
-			case SEMICOLON: cout << "SEMICOLON"; break;
-			case BYTE: cout << "BYTE"; break;
-			case CONST: cout << "CONST"; break;
-			case ELSE: cout << "ELSE"; break;
-			case END: cout << "END"; break;
-			case EXIT: cout << "EXIT"; break;
-			case FLOAT64: cout << "FLOAT64"; break;
-			case FOR: cout << "FOR"; break;
-			case FUNCTION: cout << "FUNCTION"; break;
-			case IF: cout << "IF"; break;
-			case INT32: cout << "INT32"; break;
-			case PRINT: cout << "PRINT"; break;
-			case RECORD: cout << "RECORD"; break;
-			case REF: cout << "REF"; break;
-			case RETURN: cout << "RETURN"; break;
-			case STATIC: cout << "STATIC"; break;
-			case TYPE: cout << "TYPE"; break;
-			case VAR: cout << "VAR"; break;
-			case WHILE: cout << "WHILE"; break;
-			case INT_LITERAL: cout << "INT_LITERAL"; break;
-			case FLOAT_LITERAL: cout << "FLOAT_LITERAL"; break;
-			case BYTE_LITERAL: cout << "BYTE_LITERAL"; break;
-			case IDENTIFIER: cout << "IDENTIFIER"; break;
-			case COMMA: cout << "COMMA"; break;
-			case DOT: cout << "DOT"; break;
-			case STRING_LITERAL: cout << "STRING_LITERAL"; break;
-			case CHAR_LITERAL: cout << "CHAR_LITERAL"; break;
+			case UNARY_NEG: cerr << "UNARY_NEG"; break;
+			case UNARY_NOT: cerr << "UNARY_NOT"; break;
+			case UNARY_TILDE: cerr << "UNARY_TILDE"; break;
+			case MULT: cerr << "MULT"; break;
+			case DIV: cerr << "DIV"; break;
+			case PLUS: cerr << "PLUS"; break;
+			case MINUS: cerr << "MINUS"; break;
+			case LESS_THAN: cerr << "LESS_THAN"; break;
+			case GREAT_THAN: cerr << "GREAT_THAN"; break;
+			case LESS_THAN_EQUAL: cerr << "LESS_THAN_EQUAL"; break;
+			case GREATER_THAN_EQUAL: cerr << "GREATER_THAN_EQUAL"; break;
+			case EQUALITY: cerr << "EQUALITY"; break;
+			case INEQUALITY: cerr << "INEQUALITY"; break;
+			case BITWISE_AND: cerr << "BITWISE_AND"; break;
+			case LOGICAL_AND: cerr << "LOGICAL_AND"; break;
+			case BITWISE_OR: cerr << "BITWISE_OR"; break;
+			case LOGICAL_OR: cerr << "LOGICAL_OR"; break;
+			case ASSIGNMENT: cerr << "ASSIGNMENT"; break;
+			case HAT: cerr << "HAT"; break;
+			case BITWISE_SHIFT_RIGHT: cerr << "BITWISE_SHIFT_RIGHT"; break;
+			case BITWISE_SHIFT_LEFT: cerr << "BITWISE_SHIFT_LEFT"; break;
+			case LEFT_PAREN: cerr << "LEFT_PAREN"; break;
+			case RIGHT_PAREN: cerr << "RIGHT_PAREN"; break;
+			case LEFT_BRACKET: cerr << "LEFT_BRACKET"; break;
+			case RIGHT_BRACKET: cerr << "RIGHT_BRACKET"; break;
+			case LEFT_BRACE: cerr << "LEFT_BRACE"; break;
+			case RIGHT_BRACE: cerr << "RIGHT_BRACE"; break;
+			case SEMICOLON: cerr << "SEMICOLON"; break;
+			case BYTE: cerr << "BYTE"; break;
+			case CONST: cerr << "CONST"; break;
+			case ELSE: cerr << "ELSE"; break;
+			case END: cerr << "END"; break;
+			case EXIT: cerr << "EXIT"; break;
+			case FLOAT64: cerr << "FLOAT64"; break;
+			case FOR: cerr << "FOR"; break;
+			case FUNCTION: cerr << "FUNCTION"; break;
+			case IF: cerr << "IF"; break;
+			case INT32: cerr << "INT32"; break;
+			case PRINT: cerr << "PRINT"; break;
+			case RECORD: cerr << "RECORD"; break;
+			case REF: cerr << "REF"; break;
+			case RETURN: cerr << "RETURN"; break;
+			case STATIC: cerr << "STATIC"; break;
+			case TYPE: cerr << "TYPE"; break;
+			case VAR: cerr << "VAR"; break;
+			case WHILE: cerr << "WHILE"; break;
+			case INT_LITERAL: cerr << "INT_LITERAL"; break;
+			case FLOAT_LITERAL: cerr << "FLOAT_LITERAL"; break;
+			case BYTE_LITERAL: cerr << "BYTE_LITERAL"; break;
+			case IDENTIFIER: cerr << "IDENTIFIER"; break;
+			case COMMA: cerr << "COMMA"; break;
+			case DOT: cerr << "DOT"; break;
+			case STRING_LITERAL: cerr << "STRING_LITERAL"; break;
+			case CHAR_LITERAL: cerr << "CHAR_LITERAL"; break;
 		}
 		if( literal.length() > 0)
-			cout << " (" << literal << ")";
+			cerr << " (" << literal << ")";
 		
-		cout << "\n";
+		cerr << "\n";
 	}			
 };
 
@@ -213,7 +213,7 @@ int main(int argc,  char **argv)
 
 	if (!source.is_open())
 	{
-		cout << "Source File failed to open" << endl;
+		cerr << "Source File failed to open" << endl;
 		source.close();
 		return -1;
 	}
@@ -224,7 +224,7 @@ int main(int argc,  char **argv)
 	//Get first char. If null, exit.
 	if(!source.get(curChar))
 	{
-		cout << "File is empty";
+		cerr << "File is empty";
 		source.close();
 		return -1;
 	}
@@ -609,7 +609,7 @@ int main(int argc,  char **argv)
 					{
 						if (hasDot == true)
 						{
-							cout << "Syntax Error. Dot in wrong place" << endl;
+							cerr << "Syntax Error. Dot in wrong place" << endl;
 							hasError = true;
 							
 							//NOTE: Not sure if this is valid. Check specification
@@ -726,7 +726,7 @@ int main(int argc,  char **argv)
 				while(true)
 				{
 					if(idBuffer.addChar(curChar) == false)
-						cout << "Error: Identifier has more than 64 characters" << endl;
+						cerr << "Error: Identifier has more than 64 characters" << endl;
 					
 					//If there is more to the identifier
 					if(isLetter(nextChar) || isNumber(nextChar))
@@ -744,7 +744,7 @@ int main(int argc,  char **argv)
 			
 			//If char matches none of the cases, it is invalid
 			default: 
-			cout << "invalid token" << endl;
+			cerr << "invalid token" << endl;
 		}
 
 		curChar = nextChar;
