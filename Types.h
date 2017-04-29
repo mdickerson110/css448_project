@@ -14,6 +14,7 @@ enum Kind {
 	COMMA,
 	CONST,
 	DIV,
+	DOLLAR,
 	DOT,
 	ELSE,
 	END,
@@ -23,7 +24,7 @@ enum Kind {
 	FLOAT64,
 	FOR,
 	FUNCTION,
-	GREAT_THAN,
+	GREATER_THAN,
 	GREATER_THAN_EQUAL,
 	HAT,
 	IDENTIFIER,
@@ -57,7 +58,7 @@ enum Kind {
 	UNARY_TILDE,
 	UNKNOWN,
 	VAR,
-	WHILE
+	WHILE,
 };
 
 #endif

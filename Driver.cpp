@@ -1,18 +1,12 @@
 #include <iostream>
 #include <fstream>
-#include "Lexer.cpp"
+#include "parser.cpp"
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
-	string inFile(argv[1]);
-	Lexer lex;
-	
-	if (lex.openSource(inFile) == ERROR)
-	{
-		return -1;
-	}
-
-	lex.lex();
+	string inFile(argv[1]);	
+	Parser parser;
+	parser.parse(inFile);
 }

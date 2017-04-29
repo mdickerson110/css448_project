@@ -8,7 +8,7 @@ using namespace std;
 
 class Token {
 
-private:
+public:
 	Kind kind;
 	int lineNumber;
 	int colNumber;
@@ -16,6 +16,16 @@ private:
 	string literal;
 
 public:
+	Token()
+	{
+		this->kind = UNKNOWN;
+		this->lineNumber = -1;
+		this->colNumber = -1;
+		this->literal = "";
+		this->identifierPtr = NULL;
+	}
+	
+	
 	Token(Kind kind, int line, int col, string lit = "", string* ident = NULL)
 	{
 		this->kind = kind;
@@ -39,6 +49,11 @@ public:
 	{
 		this->literal = lit;
 	}
+	
+	int getColumnNumber()
+	{
+		return colNumber;
+	}
 
 	void printOut()
 	{
@@ -53,7 +68,7 @@ public:
 		case PLUS: cerr << "PLUS"; break;
 		case MINUS: cerr << "MINUS"; break;
 		case LESS_THAN: cerr << "LESS_THAN"; break;
-		case GREAT_THAN: cerr << "GREAT_THAN"; break;
+		case GREATER_THAN: cerr << "GREAT_THAN"; break;
 		case LESS_THAN_EQUAL: cerr << "LESS_THAN_EQUAL"; break;
 		case GREATER_THAN_EQUAL: cerr << "GREATER_THAN_EQUAL"; break;
 		case EQUALITY: cerr << "EQUALITY"; break;

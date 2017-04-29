@@ -1,0 +1,1 @@
+for for type ident1 record end type ident2 ident3
