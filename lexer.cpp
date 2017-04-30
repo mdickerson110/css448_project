@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include "IdentifierBuffer.cpp"
+#include <map>
+#include "SymbolBuffer.cpp"
 #include "Types.h"
 #include "Token.cpp"
 
@@ -12,10 +13,13 @@ using namespace std;
 class Lexer
 {
 public:
+
 	//Constructor
 	Lexer()
 	{
 		this->output = NULL;
+		this->lineNumber = 1;
+		this->columnNumber = 1;
 	}
 
 	int openSource(string inFile)
@@ -23,6 +27,7 @@ public:
 		//Open file input by user
 		source.open(inFile);
 
+		//make sure source file was successfully opened.
 		if (!source.is_open())
 		{
 			cerr << "Failed to open source file." << endl;
@@ -30,28 +35,41 @@ public:
 			return ERROR;
 		}
 
-		int firstChar = source.peek();
-
-		if (firstChar == EOF)
-		{
+		//check if file is empty
+		if (source.peek() == EOF)
+		{	
 			cerr << "Source file is empty.";
 			source.close();
 			return ERROR;
 		}
 		else
 		{
-			//only open output if source is nonempty
+			//attempt opening destination file
 			if ((this->output = freopen("Tokens.txt", "w", stderr)) == NULL)
 			{
-				cerr << "Failed to open output file." << endl;
+				cerr << "Could not open destination file." << endl;
 				return ERROR;
 			}
 		}
 
+		//At this point, we know the file is open and has at least one char.
+
+		//initialize currentChar and nextChar
+		source.get(curChar);
+
+		if (!source.get(nextChar))
+		{
+			nextChar = '\0';
+		}
+
+		//intialize lineNumber and columnNumber
+		lineNumber = 1;
+		columnNumber = 1;
+
 		return SUCCESS;
 	}
 
-	//Main lexing function
+	//Lex everything at once.
 	void lex()
 	{
 		//GLOBALS
@@ -60,13 +78,7 @@ public:
 		int lineNumber = 1;
 		int columnNumber = 1;
 		//Temp buffer for storing strings.
-		IdentifierBuffer idBuf;
-
-		if (!source.get(curChar))
-		{
-			cerr << "Source file is empty." << endl;
-			return;
-		}
+		SymbolBuffer symBuf;
 
 		//loop getting single characters as long as the file lasts.
 		while (curChar != '\0')
@@ -374,12 +386,14 @@ public:
 
 					while (curChar != '"')
 					{
-						idBuf.addChar(curChar);
+						symBuf.addChar(curChar);
 						getNextChar(source, curChar, nextChar, columnNumber);
 					}
 
 					//TODO: Store string inside a data structure.
-					token.setLiteral(idBuf.getIdentifier());
+					string symbol = symBuf.getSymbol();
+					symbolTable[symbol] = string(symbol);
+					token.setSymbolPtr(&symbolTable[symbol]);
 					token.printOut();
 					break;
 				}
@@ -399,11 +413,11 @@ public:
 					//in source code.
 					while (curChar != '\'')
 					{
-						idBuf.addChar(curChar);
+						symBuf.addChar(curChar);
 						getNextChar(source, curChar, nextChar, columnNumber);
 					}
 
-					token.setLiteral(idBuf.getIdentifier());
+					token.setLiteral(symBuf.getSymbol());
 					token.printOut();
 					break;
 				}
@@ -425,7 +439,7 @@ public:
 					}
 
 					Token token(INT_LITERAL, lineNumber, columnNumber);
-					IdentifierBuffer numBuffer;
+					SymbolBuffer numBuffer;
 					bool hasDot = false;
 					bool hasError = false;
 
@@ -472,7 +486,7 @@ public:
 					//Update and print token if it is valid
 					if (!hasError)
 					{
-						token.setLiteral(numBuffer.getIdentifier());
+						token.setLiteral(numBuffer.getSymbol());
 						token.printOut();
 					}
 
@@ -491,46 +505,571 @@ public:
 				case 'w': case 'x': case 'y': case 'z': case '_':
 				{
 					Token token(IDENTIFIER, lineNumber, columnNumber);
-					IdentifierBuffer idBuffer;
+					SymbolBuffer symBuffer;
 
 					//Loop to get complete identifier
 					while (true)
 					{
-						if (idBuffer.addChar(curChar) == false)
+						if (symBuffer.addChar(curChar) == false)
+						{
 							cerr << "Error: Identifier has more than 64 characters" << endl;
-
+						}
+							
 						//If there is more to the identifier
 						if (isLetter(nextChar) || isNumber(nextChar))
+						{
 							getNextChar(source, curChar, nextChar, columnNumber);
+						}
 						else //Number is completed					
+						{
 							break;
+						}
 					}
 
-					string ident = idBuffer.getIdentifier();
+					string ident = symBuffer.getSymbol();
+
 					if (isKeyword(ident, token) == false)
+					{
 						token.setLiteral(ident);
+					}
+					else //add identifier to symbol table
+					{
+						symbolTable[ident] = string(ident);
+						token.setLiteral(ident);
+						token.setSymbolPtr(&symbolTable[ident]);
+					}
+					
 					token.printOut();
 					break;
 				}
 
 				//If char matches none of the cases, it is invalid
 				default:
+				{
 					cerr << "invalid token" << endl;
 				}
-
-				curChar = nextChar;
-				columnNumber++;
 			}
+
+			curChar = nextChar;
+			columnNumber++;
+		}
 
 		//close file and exit program
 		source.close();
+	}
+
+	//Get one token at a time.
+	Token* next()
+	{
+		//stores a symbol string as it is read character by character.
+		SymbolBuffer symBuf;
+		Token *token = NULL;
+		bool tokenFound = false;
+
+		//loop getting single characters as long as the file lasts.
+		while (curChar != '\0' && !tokenFound)
+		{
+			//*****************************************************************
+			//MAIN SWITCH
+			//*****************************************************************
+			switch (curChar)
+			{
+				//*****************************************************************
+				//OPERATORS
+				//*****************************************************************
+				case '-':
+				{
+					token = new Token(MINUS, lineNumber, columnNumber);
+					tokenFound == true;
+					break;
+				}
+				case '!':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '=')
+					{
+						token->setKind(INEQUALITY);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{
+						token->setKind(UNARY_NOT);
+					}
+
+					tokenFound == true;
+					break;
+				}
+				case '&':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '&')
+					{
+						token->setKind(LOGICAL_AND);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{
+						token->setKind(BITWISE_AND);
+					}
+
+					tokenFound = true;
+					break;
+				}
+				case '*':
+				{
+					token = new Token(MULT, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '/':
+				{
+					//The DIV operator can also signify the beginning of a comment,
+					//therefore this case needs to include logic to determine whether
+					//curChar marks the beginning of a comment.
+
+					if (nextChar == '/')
+					{ 	//read comment until the end of line char or end of file
+						while (curChar != '\n' && curChar != '\0')
+						{
+							getNextChar(source, curChar, nextChar, columnNumber);
+						}
+
+						//update globals
+						lineNumber++;
+						columnNumber = 0;
+						break;
+					}
+					else if (nextChar == '*')
+					{ 	//read comment until '*/' is reached
+
+						//Increment char pointers BEFORE while loop. If this operation
+						//is not performed, then the string "/*/" may prematurely
+						//exit the loop and fail to consume the full comment.
+						getNextChar(source, curChar, nextChar, columnNumber);
+
+						while (true)
+						{
+							getNextChar(source, curChar, nextChar, columnNumber);
+
+							//check if the end of comment has been reached.
+							if (curChar == '*' && nextChar == '/')
+							{	//consume nextChar so that curChar will be set to
+								//the character directly after nextChar at the
+								//beginning of the next iteration of the main loop.
+								getNextChar(source, curChar, nextChar, columnNumber);
+								break;
+							}
+							//check for new line in multi-line comment
+							else if (curChar == '\n')
+							{	//Update global.
+								columnNumber = 1;
+								lineNumber++;
+							}
+							//check for end of file
+							else if (nextChar == '\0')
+							{	//simply break out of loop. The end of file condition
+								//will be caught at the beginning of the next
+								//iteration of the main loop.
+								break;
+							}
+						}
+
+						//prevent falling through to the next case.
+						break;
+					}
+					else
+					{	//curChar is simply a DIV token.
+						token = new Token(DIV, lineNumber, columnNumber);
+						tokenFound = true;
+						break;
+					}
+				}
+				case '^':
+				{
+					token = new Token(HAT, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '|':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '|')
+					{	// "||"
+						token->setKind(LOGICAL_OR);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{	// "|"
+						token->setKind(BITWISE_OR);
+					}
+
+					tokenFound = true;
+					break;
+				}
+				case '~':
+				{
+					token = new Token(UNARY_TILDE, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '+':
+				{
+					token = new Token(PLUS, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '<':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '<')
+					{
+						token->setKind(BITWISE_SHIFT_LEFT);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else if (nextChar == '=')
+					{
+						token->setKind(LESS_THAN_EQUAL);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{
+						token->setKind(LESS_THAN);
+					}
+
+					tokenFound = true;
+					break;
+				}
+				case '>':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '>')
+					{
+						token->setKind(BITWISE_SHIFT_RIGHT);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else if (nextChar == '=')
+					{
+						token->setKind(GREATER_THAN_EQUAL);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{
+						token->setKind(GREAT_THAN);
+					}
+
+					tokenFound = true;
+					break;
+				}
+				case '=':
+				{
+					token = new Token(UNKNOWN, lineNumber, columnNumber);
+
+					if (nextChar == '=')
+					{
+						token->setKind(EQUALITY);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+					else
+					{
+						token->setKind(ASSIGNMENT);
+					}
+
+					tokenFound = true;
+					break;
+				}
+
+
+				//*****************************************************************
+				//SINGLE CHARACTER TOKENS
+				//*****************************************************************
+				//new line
+				case '\n':
+				{
+					//update globals
+					lineNumber++;
+					columnNumber = 0; //columnNumber incremented to 1 at end of main loop
+					break;
+				}
+				case '(':
+				{
+					token = new Token(LEFT_PAREN, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case ')':
+				{
+					token = new Token(RIGHT_PAREN, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case ';':
+				{
+					token = new Token(SEMICOLON, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '[':
+				{
+					token = new Token(LEFT_BRACKET, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case ']':
+				{
+					token = new Token(RIGHT_BRACKET, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '{':
+				{
+					token = new Token(LEFT_BRACE, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '}':
+				{
+					token = new Token(RIGHT_BRACE, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case ',':
+				{
+					token = new Token(COMMA, lineNumber, columnNumber);
+					tokenFound = true;
+					break;
+				}
+				case '\t':
+				{	//simply consume tab characters
+					break;
+				}
+				case ' ':
+				{	//simply consume white space
+					break;
+				}
+
+				//*****************************************************************
+				//STRING LITERAL
+				//*****************************************************************
+				case '"':
+				{
+					//simply read the string until the matching double quote.
+					//The lexer does not need to concern itself with interpreting
+					//escape characters; it needs only to extract a string.
+					token = new Token(STRING_LITERAL, lineNumber, columnNumber);
+
+					//consume '"'
+					getNextChar(source, curChar, nextChar, columnNumber);
+
+					while (curChar != '"')
+					{
+						symBuf.addChar(curChar);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+
+					//TODO: Store string inside a data structure.
+					string symbol = symBuf.getSymbol();
+					symbolTable[symbol] = string(symbol);
+					token->setSymbolPtr(&symbolTable[symbol]);
+					tokenFound = true;
+					break;
+				}
+
+				//*****************************************************************
+				//CHARACTER LITERAL
+				//*****************************************************************
+				case '\'':
+				{
+					//Simply read the character literal until the matching single quote.
+					token = new Token(CHAR_LITERAL, lineNumber, columnNumber);
+
+					//consume '\'' (single quote)
+					getNextChar(source, curChar, nextChar, columnNumber);
+
+					//NOTE: Character literals are represented by multiple characters
+					//in source code.
+					while (curChar != '\'')
+					{
+						symBuf.addChar(curChar);
+						getNextChar(source, curChar, nextChar, columnNumber);
+					}
+
+					token->setLiteral(symBuf.getSymbol());
+					tokenFound = true;
+					break;
+				}
+
+				//*****************************************************************
+				//INTEGER OR FLOATING POINT NUMBER
+				//*****************************************************************
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9': case '.':
+				{
+					if (curChar == '.')
+					{
+						if (isNumber(nextChar) == false)
+						{
+							token = new Token(DOT, lineNumber, columnNumber);
+							tokenFound = true;
+							break;
+						}
+					}
+
+					token = new Token(INT_LITERAL, lineNumber, columnNumber);
+					SymbolBuffer numBuffer;
+					bool hasDot = false;
+					bool hasError = false;
+
+					//Loop to get complete number
+					while (true)
+					{
+						numBuffer.addChar(curChar);
+
+						if (curChar == '.')
+						{
+							if (hasDot == true)
+							{
+								cerr << "Syntax Error. Dot in wrong place" << endl;
+								hasError = true;
+
+								//NOTE: Not sure if this is valid. Check specification
+								// for numbers.
+
+								//Consume the rest of the invalid token
+								while (nextChar != ' ' && nextChar != '\n' && nextChar != '\t')
+								{
+									getNextChar(source, curChar, nextChar, columnNumber);
+									//								if(!source.get(nextChar))
+									//									break;
+								}
+								break;
+							}
+
+							token->setKind(FLOAT_LITERAL);
+							hasDot = true;
+						}
+
+						//If there is more to the number
+						if (isNumber(nextChar) || nextChar == '.')
+						{
+							getNextChar(source, curChar, nextChar, columnNumber);
+						}
+						else //Number is completed
+						{
+							break;
+						}
+					}
+
+					//Update and print token if it is valid
+					if (!hasError)
+					{
+						token->setLiteral(numBuffer.getSymbol());
+						tokenFound = true;
+					}
+
+					break;
+				}
+
+				//*****************************************************************
+				//Identifiers
+				//*****************************************************************
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H':
+				case 'I': case 'J': case 'K': case 'L': case 'M': case 'N': case 'O': case 'P':
+				case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+				case 'Y': case 'Z': case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+				case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
+				case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v':
+				case 'w': case 'x': case 'y': case 'z': case '_':
+				{
+					token = new Token(IDENTIFIER, lineNumber, columnNumber);
+					SymbolBuffer symBuffer;
+
+					//Loop to get complete identifier
+					while (true)
+					{
+						if (symBuffer.addChar(curChar) == false)
+						{
+							cerr << "Error: Identifier has more than 64 characters" << endl;
+						}
+
+						//If there is more to the identifier
+						if (isLetter(nextChar) || isNumber(nextChar))
+						{
+							getNextChar(source, curChar, nextChar, columnNumber);
+						}
+						else //Number is completed					
+						{
+							break;
+						}
+					}
+
+					string ident = symBuffer.getSymbol();
+
+					if (isKeyword(ident, *token) == false)
+					{
+						token->setLiteral(ident);
+					}
+					else //add identifier to symbol table
+					{
+						symbolTable[ident] = string(ident);
+						token->setLiteral(ident);
+						token->setSymbolPtr(&symbolTable[ident]);
+					}
+
+					tokenFound = true;
+					break;
+				}
+
+				//If char matches none of the cases, it is invalid
+				default:
+				{
+					token = new Token(INVALID, lineNumber, columnNumber);
+					tokenFound = true;
+				}
+			}
+
+			getNextChar(source, curChar, nextChar, columnNumber);
+		}
+
+		return token;
+	}
+
+	bool hasNext()
+	{
+		if (curChar == '\0')
+		{
+			source.close();
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	void printSymbolTable()
+	{
+		for (map<string, string>::iterator it = symbolTable.begin(); it != symbolTable.end(); ++it)
+		{
+			cout << it->second << endl;
+		}
 	}
 
 //*****************************************************************
 //PRIVATE MEMBERS AND FUNCTIONS
 //*****************************************************************
 private:
+	//GLOBALS
+	char curChar;
+	char nextChar;
+	int lineNumber;
+	int columnNumber;
 	ifstream source;
+	map <string, string> symbolTable;
 	FILE *output;
 
 	//Check if input char is a digit
