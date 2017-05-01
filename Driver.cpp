@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "Lexer.cpp"
+#include "lexer.cpp"
 #include "Types.h"
 
 using namespace std;
@@ -15,11 +15,6 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	//lexer.lex();
-
-	//cout << "Printing symbols..." << endl;
-	//lexer.printSymbolTable();
-
 	while (lexer.hasNext())
 	{
 		//DEBUG cout << "Beginning iteration..." << endl;
@@ -32,6 +27,8 @@ int main(int argc, char **argv)
 
 		//DEBUG cout << "End of iteration..." << endl;
 	}
+
+	lexer.printSymbolTable();
 
 	return 0;
 }

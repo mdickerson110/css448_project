@@ -1,9 +1,13 @@
 # css448_project
 
 ### General
-This branch will be used for refactoring our current implementation of Lexer.cpp. Lexer.cpp will be converted into an iterator with next() and hasNext() methods.
 
 ### ToDos
-* Convert Lexer.cpp to an Iterator.
+* Develop test harness for Lexer program.
+* Check for EOF where necessary; any case that consumes multiple characters can reach the end of file unexpectedly.
+* Add parser.
+
+### Questions
+* Do we need to add literals to symbol table?
 
 ### Bugs
